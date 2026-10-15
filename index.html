@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090d1c">
+  <title>SUNAAIRA AI - Personal Assistant</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      background: radial-gradient(circle at top, #172554, #090d1c 65%);
+      color: #f8fafc; font-family: Arial, sans-serif;
+      display: flex; justify-content: center; padding: 24px 14px;
+    }
+    main { width: 100%; max-width: 620px; text-align: center; }
+    .orb {
+      width: 105px; height: 105px; margin: 25px auto;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #6366f1, #a855f7);
+      box-shadow: 0 0 45px #6366f177;
+      display: grid; place-items: center; font-size: 42px;
+    }
+    h1 { letter-spacing: 3px; font-size: 29px; }
+    .sub { color: #a5b4fc; }
+    .panel {
+      margin-top: 25px; padding: 18px; border-radius: 20px;
+      background: #111827dd; border: 1px solid #334155;
+    }
+    select, input, button {
+      font: inherit; border-radius: 12px; padding: 13px;
+    }
+    select, input {
+      background: #0f172a; color: white; border: 1px solid #475569;
+    }
+    select { width: 100%; margin-bottom: 12px; }
+    .controls { display: flex; gap: 8px; }
+    input { width: 100%; min-width: 0; }
+    button {
+      border: 0; cursor: pointer; color: white;
+      background: #4f46e5; font-weight: bold;
+    }
+    button:disabled { opacity: .5; }
+    .mic { background: #0891b2; white-space: nowrap; }
+    #status { color: #67e8f9; min-height: 24px; margin: 18px 0; }
+    #reply {
+      text-align: left; line-height: 1.7; white-space: pre-wrap;
+      overflow-wrap: anywhere; min-height: 90px; color: #e2e8f0;
+    }
+    .note { color: #94a3b8; font-size: 13px; line-height: 1.6; }
+    @media(max-width: 400px) {
+      .controls { flex-wrap: wrap; }
+      .controls input { flex-basis: 100%; }
+      .controls button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <div class="orb">✦</div>
+  <h1>SUNAAIRA AI</h1>
+  <p class="sub">Your Personal Voice Assistant</p>
+
+  <section class="panel">
+    <label for="language">Assistant language</label>
+    <select id="language">
+      <option value="hi-IN">Hindi — हिन्दी</option>
+      <option value="en-IN">English</option>
+      <option value="ne-NP">Nepali — नेपाली</option>
+    </select>
+
+    <div class="controls">
+      <input id="question" placeholder="Yahan likhein ya mic dabayein...">
+      <button class="mic" id="mic">🎙️ Bolein</button>
+      <button id="send">Send</button>
+    </div>
+
+    <p id="status">Aapka assistant taiyar hai.</p>
+    <div id="reply">Namaste! Main SUNAAIRA AI hoon. Aap mujhse baat kar sakte hain.</div>
+    <button id="speak" style="margin-top:12px">🔊 Dobara sunayein</button>
+  </section>
+
+  <p class="note">
+    Pehla demo version · Voice browser support aur microphone permission par nirbhar hai.
+    Abhi internet se jawab dene wala AI connected nahi hai.
+  </p>
+</main>
+
+<script>
+  const question = document.getElementById("question");
+  const reply = document.getElementById("reply");
+  const status = document.getElementById("status");
+  const language = document.getElementById("language");
+
+  function speak(text) {
+    if (!("speechSynthesis" in window)) {
+      status.textContent = "Is browser mein voice output supported nahi hai.";
+      return;
+    }
+    speechSynthesis.cancel();
+    const voice = new SpeechSynthesisUtterance(text);
+    voice.lang = language.value;
+    speechSynthesis.speak(voice);
+  }
+
+  function answer() {
+    const q = question.value.trim().toLowerCase();
+    if (!q) {
+      status.textContent = "Pehle kuch likhein ya microphone se bolein.";
+      return;
+    }
+
+    let a;
+    if (/hello|hi|namaste|नमस्ते|नमस्कार|नमस्कार/.test(q)) {
+      a = "Namaste! Main SUNAAIRA AI hoon. Aapki kya madad kar sakta hoon?";
+    } else if (/your name|tumhara naam|naam kya|तुम्हारा नाम|नाम क्या/.test(q)) {
+      a = "Mera naam SUNAAIRA AI hai. Main aapka personal assistant demo hoon.";
+    } else if (/time|samay|समय|समय क्या/.test(q)) {
+      a = "Aapke device par abhi " +
+        new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + " baj rahe hain.";
+    } else if (/date|tarikh|तारीख|आज कौन/.test(q)) {
+      a = "Aaj ki date " +
+        new Date().toLocaleDateString(language.value) + " hai.";
+    } else if (/help|madad|मदद|kya kar/.test(q)) {
+      a = "Abhi main greeting, time aur date jaise basic demo jawab de sakta hoon. Real AI aur internet search abhi connect nahi hain.";
+    } else {
+      a = "Maine aapka message suna/padha: " + question.value +
+        "\n\nAbhi main demo mode mein hoon. Smart AI jawab dene ke liye humein baad mein AI service connect karni hogi.";
+    }
+
+    reply.textContent = a;
+    status.textContent = "Jawab taiyar hai.";
+    speak(a);
+  }
+
+  document.getElementById("send").addEventListener("click", answer);
+  question.addEventListener("keydown", e => {
+    if (e.key === "Enter") answer();
+  });
+  document.getElementById("speak").addEventListener("click", () => {
+    speak(reply.textContent);
+  });
+
+  document.getElementById("mic").addEventListener("click", () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      status.textContent = "Voice input is browser mein available nahi hai. Chrome try karein ya type karein.";
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = language.value;
+    recognition.interimResults = false;
+    recognition.onstart = () => status.textContent = "Sun raha hoon... Boliye!";
+    recognition.onresult = e => {
+      question.value = e.results[0][0].transcript;
+      answer();
+    };
+    recognition.onerror = e => {
+      status.textContent = "Microphone error: " + e.error +
+        ". Permission check karein ya type karke try karein.";
+    };
+    recognition.onend = () => {
+      if (status.textContent === "Sun raha hoon... Boliye!") {
+        status.textContent = "Aap phir se microphone dabakar bol sakte hain.";
+      }
+    };
+    recognition.start();
+  });
+</script>
+</body>
+</html>
