@@ -105,33 +105,43 @@
   }
 
   function answer() {
-    const q = question.value.trim().toLowerCase();
-    if (!q) {
-      status.textContent = "Pehle kuch likhein ya microphone se bolein.";
-      return;
+    
+async function answer() {
+  const q = question.value.trim();
+
+  if (!q) {
+    status.textContent = "Pehle kuch likhein ya microphone se bolein.";
+    return;
+  }
+
+  status.textContent = "SUNAAIRA AI soch raha hai...";
+
+  try {
+    const response = await fetch(
+      "https://sunaaira-ai.onlineshopping8776.workers.dev/",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: q })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "AI se jawab nahi mila.");
     }
 
-    let a;
-    if (/hello|hi|namaste|नमस्ते|नमस्कार|नमस्कार/.test(q)) {
-      a = "Namaste! Main SUNAAIRA AI hoon. Aapki kya madad kar sakta hoon?";
-    } else if (/your name|tumhara naam|naam kya|तुम्हारा नाम|नाम क्या/.test(q)) {
-      a = "Mera naam SUNAAIRA AI hai. Main aapka personal assistant demo hoon.";
-    } else if (/time|samay|समय|समय क्या/.test(q)) {
-      a = "Aapke device par abhi " +
-        new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + " baj rahe hain.";
-    } else if (/date|tarikh|तारीख|आज कौन/.test(q)) {
-      a = "Aaj ki date " +
-        new Date().toLocaleDateString(language.value) + " hai.";
-    } else if (/help|madad|मदद|kya kar/.test(q)) {
-      a = "Abhi main greeting, time aur date jaise basic demo jawab de sakta hoon. Real AI aur internet search abhi connect nahi hain.";
-    } else {
-      a = "Maine aapka message suna/padha: " + question.value +
-        "\n\nAbhi main demo mode mein hoon. Smart AI jawab dene ke liye humein baad mein AI service connect karni hogi.";
-    }
-
+    const a = data.answer || "AI reply nahi mila.";
     reply.textContent = a;
     status.textContent = "Jawab taiyar hai.";
     speak(a);
+
+  } catch (error) {
+    status.textContent = "Connection error: " + error.message;
+  }
+}
+
   }
 
   document.getElementById("send").addEventListener("click", answer);
