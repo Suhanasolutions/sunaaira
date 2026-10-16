@@ -160,13 +160,33 @@ async function answer() {
       return;
     }
     const recognition = new SpeechRecognition();
+    recognition.continuous = true;
     recognition.lang = language.value;
     recognition.interimResults = false;
     recognition.onstart = () => status.textContent = "Sun raha hoon... Boliye!";
     recognition.onresult = e => {
-      question.value = e.results[0][0].transcript;
+      recognition.onresult = e => {
+  const heard = e.results[e.results.length - 1][0].transcript.trim();
+  const text = heard.toLowerCase();
+
+  if (
+    text.includes("hey sunaaira") ||
+    text.includes("hey sunaira") ||
+    text.includes("sunaaira")
+  ) {
+    const questionText = heard
+      .replace(/hey sunaaira|hey sunaira|sunaaira/ig, "")
+      .trim();
+
+    if (questionText) {
+      question.value = questionText;
       answer();
-    };
+    } else {
+      status.textContent = "Ji, boliye! Main SUNAAIRA AI hoon.";
+      speak("Ji, boliye! Main SUNAAIRA AI hoon.");
+    }
+  }
+};
     recognition.onerror = e => {
       status.textContent = "Microphone error: " + e.error +
         ". Permission check karein ya type karke try karein.";
